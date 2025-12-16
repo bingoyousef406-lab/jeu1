@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tap sur les cibles 💖</title>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle, #0d0d0d, #000);
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    touch-action: manipulation; /* mobile-friendly */
+}
+#gameCanvas {
+    background: linear-gradient(to bottom, #111, #333);
+    border: 5px solid #ff66aa;
+    border-radius: 20px;
+    display: block;
+    max-width: 90vw;
+    max-height: 90vw;
+    touch-action: none;
+}
+#finalMessage {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 1.8em;
+    color: #ff66aa;
+}
+#finalMessage img {
+    width: 150px;
+    border-radius: 50%;
+    margin-top: 20px;
+    box-shadow: 0 0 40px #ff66aa;
+}
+.heart, .diamond {
+    position: absolute;
+    animation: floatHearts 4s linear infinite;
+}
+@keyframes floatHearts {
+    0% { transform: translateY(0) scale(1); opacity: 1;}
+    100% { transform: translateY(-500px) scale(1.5); opacity: 0;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+
+<div id="finalMessage">
+    <div id="romanticText"></div>
+    <img id="herPhoto" src="Marioum.JPEG" alt="Marioum">
+    <br>
+    <button id="playMusic" onclick="playMusic()" style="margin-top:10px; padding:10px 20px; font-size:1em;">🎵 Écouter la musique</button>
+</div>
+
+<audio id="loveSong" src="KASO.mp3"></audio>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const audio = document.getElementById('loveSong');
+
+let score = 0;
+const goal = 10;
+
+const target = {
+    x: Math.random() * (canvas.width - 40),
+    y: Math.random() * (canvas.height - 40),
+    radius: 30
+};
+
+function drawTarget() {
+    ctx.fillStyle = "#ffcc00";
+    ctx.beginPath();
+    ctx.arc(target.x + target.radius, target.y + target.radius, target.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = "20px Arial";
+    ctx.fillText("⭐", target.x + target.radius - 12, target.y + target.radius + 8);
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function spawnTarget() {
+    target.x = Math.random() * (canvas.width - 40);
+    target.y = Math.random() * (canvas.height - 40);
+}
+
+canvas.addEventListener('click', function(e){
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const dist = Math.hypot(clickX - (target.x + target.radius), clickY - (target.y + target.radius));
+    if(dist < target.radius){
+        score++;
+        if(score >= goal){
+            endGame();
+            return;
+        }
+        spawnTarget();
+    }
+});
+
+function draw(){
+    clearCanvas();
+    drawTarget();
+    requestAnimationFrame(draw);
+}
+
+function endGame(){
+    canvas.style.display = "none";
+    const msg = document.getElementById('finalMessage');
+    msg.style.display = "block";
+
+    // cœurs et diamants flottants
+    for(let i=0;i<50;i++){
+        let el = document.createElement('div');
+        el.className = (i%2===0) ? "heart" : "diamond";
+        el.innerText = (i%2===0) ? "💖" : "💎";
+        el.style.left = Math.random()*window.innerWidth + "px";
+        el.style.top = window.innerHeight + "px";
+        el.style.fontSize = (Math.random()*30+20) + "px";
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(), 5000);
+    }
+
+    // texte romantique animé lettre par lettre
+    const text = "Marioum… je t’aime profondément et je suis tellement heureux de t’avoir dans ma vie 💖";
+    const container = document.getElementById('romanticText');
+    let i=0;
+    function typeWriter(){
+        if(i<text.length){
+            container.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(typeWriter,50);
+        }
+    }
+    typeWriter();
+}
+
+function playMusic(){
+    audio.play();
+}
+
+draw();
+</script>
+
+</body>
+</html>
